@@ -4,6 +4,7 @@
 <dict>
     <key>CFBundleDisplayName</key><string>Typing Simulator</string>
     <key>CFBundleExecutable</key><string>TypingSimulator</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundleIdentifier</key><string>com.singhzoren.typingsimulator</string>
     <key>CFBundleName</key><string>Typing Simulator</string>
     <key>CFBundlePackageType</key><string>APPL</string>

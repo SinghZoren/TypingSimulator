@@ -4,16 +4,22 @@ version = "1.0.0"
 edition = "2021"
 description = "A cross-platform typing simulator"
 license = "MIT"
+default-run = "TypingSimulator"
 
 [[bin]]
 name = "TypingSimulator"
 path = "src/main.rs"
 
 [dependencies]
-eframe = { version = "0.32", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
+eframe = { version = "0.32", default-features = false, features = ["default_fonts", "glow", "persistence", "wayland", "x11"] }
 enigo = "0.5"
 global-hotkey = "0.7"
+image = { version = "0.25", default-features = false, features = ["png"] }
 rand = "0.9"
+serde = { version = "1", features = ["derive"] }
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
 
 [profile.release]
 lto = "thin"
