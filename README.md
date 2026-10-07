@@ -1,79 +1,43 @@
-# TypingSimulator
+# Typing Simulator
 
-Automates "realistic" typing of pasted text with a controllable hotkey. The app uses `tkinter` for the UI, `pyautogui` to emit keystrokes, and `keyboard` to register a global hotkey.
+A native Rust desktop app that types pasted text into another application at a human-like pace. It replaces the original Python/Tkinter app; Python is not needed to run it.
 
----
+## Download and use
 
-## Requirements
+Download the latest file from [GitHub Releases](https://github.com/SinghZoren/TypingSimulator/releases):
 
-- Python 3.9 or newer (macOS and Windows both supported)
-- Ability to install Python packages via `pip`
-- Accessibility permissions to allow simulated keystrokes:
-  - **macOS:** enable the Terminal (or your IDE) under *System Settings → Privacy & Security → Accessibility*.
-  - **Windows:** run your terminal/IDE as Administrator the first time you use the `keyboard` library.
+- Windows x64: `TypingSimulator-windows-x64.zip` — extract and run `TypingSimulator.exe`.
+- macOS (Intel or Apple Silicon): `TypingSimulator-macos-universal.zip` — extract and open `Typing Simulator.app`.
 
-All Python dependencies are listed in `requirements.txt`.
+Paste or enter text, adjust the settings if desired, then press **Start typing** or `F6`. Focus the target window during the countdown. Press `F6` again to stop. The app preserves whitespace, punctuation, and line breaks, and can insert then correct occasional typos. The default is 120 WPM with a three-second countdown.
 
----
+macOS requires **System Settings → Privacy & Security → Accessibility** permission for Typing Simulator. The download is currently unsigned, so on first launch you may need to right-click the app and choose **Open**. Windows may show a SmartScreen warning for the unsigned executable. Typing into a Windows app running as administrator requires starting Typing Simulator as administrator too.
 
-## Setup
+## Build from source
 
-### macOS
+Install [Rust](https://rustup.rs/) and run:
 
-1. Open Terminal and change into the project directory:
-   ```bash
-   cd /path/to/TypingSimulator
-   ```
-2. (Optional) Create and activate a virtual environment:
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-3. Install dependencies:
-   ```bash
-   python3 -m pip install --upgrade pip
-   python3 -m pip install -r requirements.txt
-   ```
-4. Grant Accessibility permissions when prompted (or beforehand, as noted above).
+```sh
+cargo run --release
+```
 
-### Windows
+The app uses `eframe` for its GUI, `global-hotkey` for `F6`, and `enigo` for keyboard input. Settings are adjustable in the window: 20–250 WPM, 0–10 seconds of start delay, corrected typo chance, and timing variation.
 
-1. Open PowerShell and change into the project directory:
-   ```powershell
-   cd C:\Users\<YourUser>\Desktop\TypingSimulator
-   ```
-2. (Optional) Create and activate a virtual environment:
-   ```powershell
-   py -3 -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
-   > If script execution is restricted, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` first.
-3. Install dependencies:
-   ```powershell
-   python -m pip install --upgrade pip
-   python -m pip install -r requirements.txt
-   ```
-4. Run PowerShell or your IDE as Administrator the first time so the `keyboard` library can register the hotkey.
+## Publish a release
 
----
+Push a version tag. GitHub Actions builds a Windows executable and a universal macOS app, then attaches both ZIP files to a GitHub Release:
 
-## Usage
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
 
-1. Launch the app:
-   - macOS: `python3 main.py`
-   - Windows: `python main.py`
-2. Paste or type the text you want to simulate in the text box.
-3. Switch to the target window.
-4. Press `F6` to start or stop typing.
-   - You have three seconds after pressing `F6` to focus the target window.
-   - The script types around 120 WPM, occasionally inserting and correcting typos for realism.
-5. Close the UI window or press `F6` again to stop the automation.
+You can also start the workflow manually from the Actions tab. That creates downloadable workflow artifacts without publishing a release.
 
----
+## Development checks
 
-## Troubleshooting
-
-- **Hotkey not working:** ensure the app has Accessibility/Administrator privileges and no other app is intercepting `F6`.
-- **Unexpected typing speed:** adjust timing constants in `start_typing()` inside `main.py`.
-- **Unicode characters:** `pyautogui` types basic ASCII reliably; for other character sets results may vary depending on OS keyboard layout.
-
+```sh
+cargo fmt --check
+cargo clippy --all-targets -- -D warnings
+cargo test
+```

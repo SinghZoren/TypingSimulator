@@ -1,0 +1,20 @@
+[package]
+name = "typing-simulator"
+version = "1.0.0"
+edition = "2021"
+description = "A cross-platform typing simulator"
+license = "MIT"
+
+[[bin]]
+name = "TypingSimulator"
+path = "src/main.rs"
+
+[dependencies]
+eframe = { version = "0.32", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
+enigo = "0.5"
+global-hotkey = "0.7"
+rand = "0.9"
+
+[profile.release]
+lto = "thin"
+strip = true

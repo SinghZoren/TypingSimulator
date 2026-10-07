@@ -1,0 +1,75 @@
+name: Build desktop downloads
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Verify and build
+        run: |
+          cargo test --locked
+          cargo build --release --locked
+      - name: Package executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path package
+          Copy-Item target/release/TypingSimulator.exe package/
+          Copy-Item README.md package/
+          Compress-Archive -Path package/* -DestinationPath TypingSimulator-windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TypingSimulator-windows-x64
+          path: TypingSimulator-windows-x64.zip
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - name: Build both architectures
+        run: |
+          cargo build --release --locked --target aarch64-apple-darwin
+          cargo build --release --locked --target x86_64-apple-darwin
+      - name: Package universal app
+        run: |
+          mkdir -p "Typing Simulator.app/Contents/MacOS"
+          lipo -create \
+            target/aarch64-apple-darwin/release/TypingSimulator \
+            target/x86_64-apple-darwin/release/TypingSimulator \
+            -output "Typing Simulator.app/Contents/MacOS/TypingSimulator"
+          cp packaging/macos/Info.plist "Typing Simulator.app/Contents/Info.plist"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            plutil -replace CFBundleShortVersionString -string "${GITHUB_REF_NAME#v}" "Typing Simulator.app/Contents/Info.plist"
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "Typing Simulator.app" TypingSimulator-macos-universal.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TypingSimulator-macos-universal
+          path: TypingSimulator-macos-universal.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*.zip
